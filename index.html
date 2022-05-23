@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Graphing Test</title>
+		<!--<script type="text/javascript" src="../api/cytoscape/cytoscape.min.js"></script>
+		<script type="text/javascript" src="../api/cytoscape/layout-base.js"></script>
+		<script type="text/javascript" src="../api/cytoscape/cose-base.js"></script>
+		<script type="text/javascript" src="../api/cytoscape/cytoscape-fcose.js"></script>-->
+		<script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+		<script src="Graph.js"></script>
+		<script src="Network.js"></script>
+		<style>
+			#cy {
+				height: 100%;
+				width: 100%;
+				position: absolute;
+				left: 0;
+				top: 0;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="cy"></div>
+	</body>
+	<script>
+		var count_nodes = Math.floor(Math.random() * 25) + 1
+		var count_ports = Math.floor(Math.random() * 10) + 1
+		var count_sites = Math.floor(Math.random() * 5) + 1
+		var network = new Network(count_sites, count_nodes, count_ports, 'cy')
+		network.display()
+	</script>
+</html>
