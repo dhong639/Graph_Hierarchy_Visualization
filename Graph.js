@@ -13,6 +13,7 @@ class Graph {
 		this.weights = {}
 		this.build_graph(count_nodes, count_ports)
 		this.spanning_tree()
+		//console.log(this.display)
 	}
 	build_graph(count_nodes, count_ports) {
 		// there must be at least 2 nodes in the graph
@@ -20,13 +21,14 @@ class Graph {
 		/**
 		 * first step is to initialize displays
 		 * 		by default, all edges are set as 1, disabled by spt
+		 * 			loops do not and will never exist
 		 * 		at the same time, prepare to set weights
 		 */
 		for(var i = 0; i < count_nodes; i++) {
 			this.display[i] = {}
 			this.weights[i] = {}
 			for(var j = 0; j < count_nodes; j++) {
-				this.display[i][j] = 1
+				this.display[i][j] = i == j ? 0 : 1
 				this.weights[i][j] = 0
 			}
 		}
@@ -35,6 +37,7 @@ class Graph {
 		 * 		do not set weights if already set
 		 * 		do not create loops
 		 * 		otherwise, weights are at least 1 in value
+		 * 		cannot have link from 
 		 */
 		for(var i in this.weights) {
 			for(var j in this.weights[i]) {
@@ -44,12 +47,6 @@ class Graph {
 					this.weights[j][i] = weight
 				}
 			}
-		}
-	}
-	set_root(root) {
-		root = String(root)
-		if(root in this.weights) {
-			this.root = root
 		}
 	}
 	spanning_tree() {
@@ -93,9 +90,21 @@ class Graph {
 			selected[y] = true
 			count_node += 1
 		}
+		/**
+		 * edges should flow downward from root
+		 * enforce direction in case ignored by spanning tree
+		 */
+		 /*this.breadth_first(this.root, true).forEach(edge => {
+			var source = edge[0]
+			var target = edge[1]
+			this.display[source][target] = 2
+			this.display[target][source] = 1
+		})*/
+	}
+	set_edgeOff(source_id, target_id) {
+		this.display[source_id][target_id] = 2
 	}
 	get_display() {
-		//this.spanning_tree()
 		var list_edges = []
 		for(var i in this.display) {
 			for(var j in this.display[i]) {
@@ -111,5 +120,45 @@ class Graph {
 	}
 	get_size() {
 		return Object.keys(this.weights).length
+	}
+	breadth_first(start, flag=false) {
+		var output = []
+
+		var visited = {}
+		for(var node in this.display) {
+			visited[node] = false
+		}
+		var queue = []
+
+		queue.push(start)
+		visited[start] = true
+
+		while(queue.length != 0) {
+			var i = queue.shift()
+			// by default, only output nodes
+			if(flag == false) {
+				output.push(i)
+			}
+
+			for(var j in this.display) {
+				/**
+				 * ignore nodes that were previously visited
+				 * link in either direction must be displayed by spanning tree
+				 */
+				if(visited[j] == false && this.display[i][j] == 2) {
+					queue.push(j)
+					visited[j] = true
+					/**
+					 * if flag is set, output edges instead
+					 * edges always returned as [parent, child]
+					 */
+					if(flag == true) {
+						output.push([i, j])
+					} 
+				}
+			}
+		}
+
+		return output
 	}
 }
