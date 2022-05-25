@@ -3,30 +3,27 @@ class Network {
 		this.dict_site = {}
 		for(var i = 0; i<count_sites; i++) {
 			var color = this.get_colorRandom()
-			var invert = this.get_colorInvert(color)
+			//var invert = this.get_colorInvert(color)
 			/**
 			 * try to put light text against dark background
 			 * readability results may vary
 			 */
-			if(color > invert) {
+			/*if(color < invert) {
 				var temp = invert
 				invert = color
 				color = temp
-			}
-			color = this.adjust_color(color, -50)
-			invert = this.adjust_color(invert, 50)
+			}*/
+			color = this.adjust_color(color, -100)
+			//invert = this.adjust_color(invert, 100)
 			var nodes = Math.floor(Math.random() * count_nodes) + 1
 			var ports = Math.floor(Math.random() * count_ports) + 1
+			//console.log(color + '\t' + invert)
 			this.dict_site[color.substring(1)] = {
 				color: color,
-				invert: invert,
+				invert: this.get_colorInvert(color),
 				data: new Graph(nodes, ports)
 			}
 		}
-		/*for(var site_id in this.dict_site){
-			var root = this.dict_site[site_id].data.root
-			console.log(this.dict_site[site_id].data.breadth_first(root))
-		}*/
 		this.cy = cytoscape({
 			container: document.getElementById(div_id),
 			//wheelSensitivity: 0.1,
@@ -61,34 +58,45 @@ class Network {
 				}
 			]
 		})
-		this.cy.on('tap', 'edge', (edge) => {
-			var edge_id = edge.target.id()
-			console.log(edge_id)
-			var source = edge_id.split('_')[0]
-			var target = edge_id.split('_')[1]
-			var source_site = source.split('.')[0]
-			var source_id = source.split('.')[1]
-			var target_site = target.split('.')[0]
-			var target_id = target.split('.')[1]
-			if(source_id) {
-				var list_edge = this.dict_site[target_site].data.breadth_first(target_id, true)
-				list_edge.reverse()
-				if(list_edge.length != 0) {
-					list_edge.forEach(edge => {
-						var child_id = target_site + '.' + edge[1]
-						var parent_id = target_site + '.' + edge[0]
-						var edge_id = parent_id + '_' + child_id
-						this.cy.remove('#' + edge_id)
-						this.cy.remove('#' + child_id)
-						this.cy.remove('#' + parent_id)
-					})
+	}
+	get_target_bySite_bySource(site_id, source_id) {
+		return this.dict_site[site_id].data.get_targetDisplayed(source_id)
+	}
+	remove_edge(site_id, source_id, target_id) {
+		var flag = this.dict_site[site_id].data.is_edge(source_id, target_id)
+		if(flag == 2) {
+			var edge_id = this.get_edgeID(site_id, source_id, target_id)
+			this.cy.remove('#' + edge_id)
+		}
+		var new_link = this.dict_site[site_id].data.remove_edge(source_id, target_id)
+		if(new_link != null) {
+			this.cy.add({
+				group: 'edges',
+				data: {
+					id: this.get_edgeID(site_id, new_link[0], new_link[1]),
+					source: this.get_nodeID(site_id, new_link[0]),
+					target: this.get_nodeID(site_id, new_link[1]),
+					weight: new_link[2]
 				}
-				else {
-					this.cy.remove('#' + edge_id)
-					this.cy.remove('#' + target)
-				}
-			}
-		})
+			})
+		}
+	}
+	get_sites() {
+		return Object.keys(this.dict_site)
+	}
+	get_site(site_id) {
+		return this.dict_site[site_id].data
+	}
+	get_colorMain(site_id) {
+		//console.log(site_id)
+		//console.log(this.dict_site[site_id])
+		return this.dict_site[site_id].color
+	}
+	get_colorInvert(site_id) {
+		return this.dict_site[site_id].invert
+	}
+	get_site_display(site_id) {
+		return this.dict_site[site_id].data.display
 	}
 	display() {
 		this.cy.add({
@@ -126,7 +134,7 @@ class Network {
 				}
 				this.add_edge(site_id, source, target, weight)
 			})
-			var root_id = this.get_id_node(site_id, root)
+			var root_id = this.get_nodeID(site_id, root)
 			this.cy.$('#' + root_id).style({
 				'width': 40 + set_node.size * 2.75,
 				'height': 40 + set_node.size * 2.75,
@@ -145,20 +153,20 @@ class Network {
 			roots: '#S'
 		}).run();
 	}
-	get_id_node(site_id, id) {
+	get_nodeID(site_id, id) {
 		return id == 'S' ? 'S' : site_id + '.' + id
 	}
-	get_id_edge(site_id, source, target) {
-		var source_id = this.get_id_node(site_id, source)
-		var target_id = this.get_id_node(site_id, target)
+	get_edgeID(site_id, source, target) {
+		var source_id = this.get_nodeID(site_id, source)
+		var target_id = this.get_nodeID(site_id, target)
 		return source_id + '_' + target_id
 	}
 	add_node(site_id, id, color, invert) {
-		var node_id = this.get_id_node(site_id, id)
+		var node_id = this.get_nodeID(site_id, id)
 		this.cy.add({
 			data: {
 				id: node_id,
-				label: id,
+				label: this.dict_site[site_id].data.is_root(id) ? site_id + '.' + id : id,
 				shape: this.dict_site[site_id].data.is_root(id) ? 'star' : 'ellipse',
 				color: color,
 				invert: invert
@@ -168,9 +176,9 @@ class Network {
 	add_edge(site_id, source, target, weight) {
 		this.cy.add({
 			data: {
-				id: this.get_id_edge(site_id, source, target), 
-				source: this.get_id_node(site_id, source), 
-				target: this.get_id_node(site_id, target),
+				id: this.get_edgeID(site_id, source, target), 
+				source: this.get_nodeID(site_id, source), 
+				target: this.get_nodeID(site_id, target),
 				weight: weight
 			}
 		})
