@@ -6,14 +6,59 @@ class Graph {
 		 * 		0: link does not exist, don't display
 		 * 		1: link is disabled by spt, don't display
 		 * 		2: link is enabled, display
-		 * determine likelihood that a link is enabled by spt
-		 * 		anything with a weight of 0 does not actually exist
 		 */
 		this.display = {}
+		/** determine likelihood that a link is enabled by spt
+		 * 	anything with a weight of 0 does not actually exist
+		 */
 		this.weights = {}
+
 		this.build_graph(count_nodes, count_ports)
-		this.spanning_tree()
+		this.spanning_tree(this.root)
 		//console.log(this.display)
+	}
+	get_nodes() {
+		return Object.keys(this.display)
+	}
+	get_targetDisplayed(source_id) {
+		var list_target = []
+		for(var target_id in this.display[source_id]) {
+			if(this.display[source_id][target_id] == 2) {
+				list_target.push(target_id)
+			}
+		}
+		list_target.sort()
+		return list_target
+	}
+	is_edge(source_id, target_id) {
+		return this.display[source_id][target_id]
+	}
+	remove_edge(source_id, target_id) {
+		var new_link = null
+		var flag = this.is_edge(source_id, target_id)
+		var list_nodes = this.breadth_first(target_id)
+		this.display[source_id][target_id] = 0
+		this.display[target_id][source_id] = 0
+		if(flag == 2) {
+			var weight = Infinity
+			var new_target = null
+			list_nodes.forEach(node => {
+				if(this.display[node][source_id] == 1) {
+					//console.log(node)
+					if(this.weights[node][source_id] < weight) {
+						weight = this.weights[node][source_id]
+						new_target = node
+					}
+				}
+			})
+			if(new_target != null) {
+				new_link = [source_id, new_target, weight]
+			}
+		}
+		if(new_link != null) {
+			this.display[source_id][new_link[1]] = 2
+		}
+		return new_link
 	}
 	build_graph(count_nodes, count_ports) {
 		// there must be at least 2 nodes in the graph
@@ -49,7 +94,7 @@ class Graph {
 			}
 		}
 	}
-	spanning_tree() {
+	spanning_tree(start) {
 		var V = Object.keys(this.weights).length
 		var count_node = 0
 
@@ -57,7 +102,7 @@ class Graph {
 		for(var key in this.weights) {
 			selected[key] = false
 		}
-		selected[this.root] = true
+		selected[start] = true
 
 		while(count_node < V - 1) {
 			var minimum = Infinity
