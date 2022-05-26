@@ -15,13 +15,25 @@ class Graph {
 
 		this.build_graph(count_nodes, count_ports)
 		this.spanning_tree(this.root)
-		//console.log(this.display)
 		console.log(this.breadth_first(this.root, true))
 		console.log(this.get_node_byDepth())
 	}
+	/**
+	 * get_nodes
+	 * 		function
+	 * 			return all nodes in graph
+	 */
 	get_nodes() {
 		return Object.keys(this.display)
 	}
+	/**
+	 * get_targetDisplayed
+	 * 		input
+	 * 			source_id	string	parent of children
+	 * 		output
+	 * 			return all displayed nodes reachable from source_id
+	 * 				all nodes under source_id, connected to source_id
+	 */
 	get_targetDisplayed(source_id) {
 		var list_target = []
 		for(var target_id in this.display[source_id]) {
@@ -32,21 +44,48 @@ class Graph {
 		list_target.sort()
 		return list_target
 	}
+	/**
+	 * is_edge
+	 * 		input
+	 * 			source_id	string	parent of child
+	 * 			target_id	string	child of parent
+	 * 		function
+	 * 			return status of given link
+	 */
 	is_edge(source_id, target_id) {
 		return this.display[source_id][target_id]
 	}
+	/**
+	 * remove_edge
+	 * 		input
+	 * 			source_id	string	parent of child
+	 * 			target_id	string	child of parent
+	 * 		function
+	 * 			remove edge and add in new edge, if possible
+	 */
 	remove_edge(source_id, target_id) {
 		var new_link = null
 		var flag = this.is_edge(source_id, target_id)
 		var list_nodes = this.breadth_first(target_id)
+		// link is disabled regardless
 		this.display[source_id][target_id] = 0
 		this.display[target_id][source_id] = 0
+		/**
+		 * check that edge is displayed
+		 * if an edge is displayed, need to know all the nodes under the removed edge
+		 * 		specifically, all nodes that exist but aren't displayed
+		 * source node is not affected, starts at target node
+		 */
 		if(flag == 2) {
+			/**
+			 * based on links under removed edge, attempt a connection from parent to a child
+			 * link is any link from the source a node discovered by breadth_first
+			 * will fail if breadth first discovers nothing
+			 */
 			var weight = Infinity
 			var new_target = null
 			list_nodes.forEach(node => {
 				if(this.display[node][source_id] == 1) {
-					//console.log(node)
 					if(this.weights[node][source_id] < weight) {
 						weight = this.weights[node][source_id]
 						new_target = node
@@ -62,6 +101,15 @@ class Graph {
 		}
 		return new_link
 	}
+	/**
+	 * build_graph
+	 * 		input
+	 * 			count_nodes		int		maximum nodes possible in graph
+	 * 			count_ports		int		maximum weight assigned to a link
+	 * 		function
+	 * 			create graph with random number of nodes and random weights for every link
+	 * 			note that this is a full mesh topology
+	 */
 	build_graph(count_nodes, count_ports) {
 		// there must be at least 2 nodes in the graph
 		count_nodes = count_nodes < 2 ? 2 : count_nodes
@@ -96,6 +144,14 @@ class Graph {
 			}
 		}
 	}
+	/**
+	 * spanning_tree
+	 * 		input
+	 * 			start	string	where to start spanning tree, some node
+	 * 		function
+	 * 			prim's algorithm for spanning tree
+	 * 			determines which nodes are to be displayed and which ain't
+	 */
 	spanning_tree(start) {
 		var V = Object.keys(this.weights).length
 		var count_node = 0
@@ -148,8 +204,16 @@ class Graph {
 			this.display[target][source] = 1
 		})*/
 	}
+	/**
+	 * set_edgeOff
+	 * 		input
+	 * 			source_id	string	parent of child
+	 * 			target_id	string	child of parent
+	 * 		function
+	 * 			set value in display to off
+	 */
 	set_edgeOff(source_id, target_id) {
-		this.display[source_id][target_id] = 2
+		this.display[source_id][target_id] = 0
 	}
 	get_display() {
 		var list_edges = []
@@ -162,12 +226,33 @@ class Graph {
 		}
 		return list_edges
 	}
+	/**
+	 * is_root
+	 * 		input
+	 * 			id	string	some node
+	 * 		function
+	 * 			check if given id is root of graph
+	 */
 	is_root(id) {
 		return id == this.root
 	}
+	/**
+	 * get_size
+	 * 		function
+	 * 			get number of items in the graph
+	 */
 	get_size() {
 		return Object.keys(this.weights).length
 	}
+	/**
+	 * breadth_first
+	 * 		input
+	 * 			start	string	where to start breadth_first
+	 * 			flag	bool	false = return nodes
+	 * 							true = return edges
+	 * 		function
+	 * 			traverse graph, level by level
+	 */
 	breadth_first(start, flag=false) {
 		var output = []
 
@@ -207,9 +292,17 @@ class Graph {
 		}
 		return output
 	}
+	/**
+	 * get_node_byDepth
+	 * 		function
+	 * 			group nodes by which level they appear
+	 * 			note that this is each edge returned by breadth_first
+	 * 				the source and target represent one level above and below the other
+	 */
 	get_node_byDepth() {
 		var dict_depth = {}
 
+		// root starts at depth 0
 		var depth = 0
 		var set_depthCurr = []
 		set_depthCurr.push(this.root)
@@ -231,6 +324,10 @@ class Graph {
 			}
 			set_depthNext.push(edge[1])
 		})
+		/**
+		 * upon reaching end, values from depthCurr and depthNext are not added
+		 * add them afterwards
+		 */
 		dict_depth[depth] = []
 		set_depthCurr.forEach(value => {
 			dict_depth[depth].push(value)
