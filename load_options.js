@@ -59,6 +59,8 @@ function remove_link() {
 	document.getElementById('remove_source').selectedIndex = 0
 	remove_allChildren('reachability')
 	create_table(network.get_site_display(site_id), 'reachability')
+	remove_allChildren('levels')
+	create_levels(network.get_node_byDepth(site_id))
 }
 
 function remove_allChildren(elementID) {
@@ -71,6 +73,7 @@ function remove_allChildren(elementID) {
 function create_table(dict_display, elementID) {
 	var table = document.createElement('table')
 	table.classList.add('table')
+	//table.classList.add('table-striped')
 	table.classList.add('table-dark')
 	var tbody = document.createElement('tbody')
 	table.appendChild(tbody)
@@ -106,6 +109,7 @@ function create_levels(dict_depth) {
 	var table = document.createElement('table')
 	table.classList.add('table')
 	table.classList.add('table-dark')
+	//table.classList.add('table-striped')
 	var tbody = document.createElement('tbody')
 	table.appendChild(tbody)
 	var list_sourceID = Object.keys(dict_depth)
