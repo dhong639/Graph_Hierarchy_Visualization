@@ -6,6 +6,8 @@ class Network {
 			var invert = this.get_colorInvert(color)
 			/**
 			 * try to put dark text against light background
+			 * invert = text
+			 * color = background
 			 * readability results may vary
 			 */
 			if(color < invert) {
@@ -13,11 +15,9 @@ class Network {
 				invert = color
 				color = temp
 			}
-			//color = this.adjust_color(color, 100)
 			invert = this.adjust_color(invert, -128)
 			var nodes = Math.floor(Math.random() * count_nodes) + 1
 			var ports = Math.floor(Math.random() * count_ports) + 1
-			//console.log(color + '\t' + invert)
 			this.dict_site[color.substring(1)] = {
 				color: color,
 				invert: invert,
@@ -38,7 +38,7 @@ class Network {
 						'text-wrap': 'wrap',
 						'color': 'data(invert)',
 						'background-color': 'data(color)',
-						'background-opacity': 0.75,
+						'background-opacity': 'data(opacity)',
 						'shape': 'data(shape)'
 					}
 				},
@@ -89,8 +89,6 @@ class Network {
 		return this.dict_site[site_id].data
 	}
 	get_colorMain(site_id) {
-		//console.log(site_id)
-		//console.log(this.dict_site[site_id])
 		return this.dict_site[site_id].color
 	}
 	get_colorInvert(site_id) {
@@ -106,11 +104,23 @@ class Network {
 				label: 'S',
 				shape: 'square',
 				color: '#000000',
-				invert: '#FFFFFF'
+				invert: '#FFFFFF',
+				opacity: 1,
+				parent: ''
 			}
 		})
 		var total = 0
 		for(var site_id in this.dict_site) {
+			this.cy.add({
+				data: {
+					id: site_id,
+					label: '',
+					shape: 'star',
+					color: '#D3D3D3',
+					invert: '#2c2c2c',
+					opacity: 0.25
+				}
+			})
 			var color = this.dict_site[site_id].color
 			var invert = this.dict_site[site_id].invert
 			var set_node = new Set()
@@ -121,14 +131,14 @@ class Network {
 				var weight = edge[2]
 				if(!set_node.has(source)) {
 					set_node.add(source)
-					this.add_node(site_id, source, color, invert)
+					this.add_node(site_id, source, color, invert, true)
 					if(this.dict_site[site_id].data.is_root(source)) {
 						root = source
 					}
 				}
 				if(!set_node.has(target)) {
 					set_node.add(target)
-					this.add_node(site_id, target, color, invert)
+					this.add_node(site_id, target, color, invert, true)
 					if(this.dict_site[site_id].data.is_root(target)) {
 						root = target
 					}
@@ -170,7 +180,9 @@ class Network {
 				label: this.dict_site[site_id].data.is_root(id) ? site_id + ' - ' + id : id,
 				shape: this.dict_site[site_id].data.is_root(id) ? 'star' : 'ellipse',
 				color: color,
-				invert: invert
+				invert: invert,
+				parent: site_id,
+				opacity: 0.75
 			}
 		})
 	}
@@ -194,12 +206,12 @@ class Network {
 	}
 	get_colorInvert(hexTripletColor) {
 		var color = hexTripletColor;
-		color = color.substring(1); // remove #
-		color = parseInt(color, 16); // convert to integer
-		color = 0xFFFFFF ^ color; // invert three bytes
-		color = color.toString(16); // convert to hex
-		color = ("000000" + color).slice(-6); // pad with leading zeros
-		color = "#" + color; // prepend #
+		color = color.substring(1);				// remove '#'
+		color = parseInt(color, 16);			// convert to integer
+		color = 0xFFFFFF ^ color;				// invert three bytes
+		color = color.toString(16);				// convert to hex
+		color = ("000000" + color).slice(-6);	// pad with leading zeros
+		color = "#" + color;					// prepend '#'
 		return color;
 	}
 	adjust_color(col, amt) {
