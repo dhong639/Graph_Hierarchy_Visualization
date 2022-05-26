@@ -1,14 +1,13 @@
+/**
+ * load_site
+ * 		function
+ * 			get value of site_id selected by user
+ * 			clear all previous information
+ * 			display new site_id and tables
+ */
 function load_site() {
 	var site_id = document.getElementById('select_site').value
 	document.getElementById('currentSite_color').innerHTML = site_id
-	//var color = site_id != '' ? network.get_colorMain(site_id) : '#000000'
-	//var invert = site_id != '' ? network.get_colorInvert(site_id) : '#FFFFFF'
-	//console.log(color + '\t' + invert)
-	//var text = site_id != '' ? site_id : text
-	//currentSite_color = document.getElementById('currentSite_color')
-	//currentSite_color.innerHTML = site_id
-	//currentSite_color.style.color = invert
-	//currentSite_color.style.backgroundColor = color
 	emptySelect('remove_source', 1)
 	emptySelect('remove_target', 1)
 	if(site_id != '') {
@@ -18,10 +17,18 @@ function load_site() {
 	}
 	remove_allChildren('reachability')
 	remove_allChildren('levels')
-	create_table(network.get_site_display(site_id), 'reachability')
-	create_table(network.get_node_byDepth(site_id), 'levels')
+	if(site_id != '') {
+		create_table(network.get_site_display(site_id), 'reachability')
+		create_table(network.get_node_byDepth(site_id), 'levels')
+	}
 }
 
+/**
+ * load_targets
+ * 		function
+ * 			based on source id, add elements to 'remove_target'
+ * 			all nodes reachable from the current source
+ */
 function load_targets() {
 	emptySelect('remove_target', 1)
 	var site_id = document.getElementById('select_site').value
@@ -30,6 +37,14 @@ function load_targets() {
 	add_options(list_target, 'remove_target')
 }
 
+/**
+ * emptySelect
+ * 		input
+ * 			elementID	string	name of element in html
+ * 			itmes		list	items to add to select element
+ * 		function
+ * 			add items to select elements
+ */
 function add_options(items, elementID) {
 	items.forEach(item => {
 		var option = document.createElement('option')
@@ -39,6 +54,14 @@ function add_options(items, elementID) {
 	})
 }
 
+/**
+ * emptySelect
+ * 		input
+ * 			elementID		string	name of element in html
+ * 			count_remaining	int		how many items to retain (from beginning)
+ * 		function
+ * 			remove elements from select element
+ */
 function emptySelect(elementID, count_remaining) {
 	var select = document.getElementById(elementID)
 	var count_current = select.length
@@ -48,6 +71,13 @@ function emptySelect(elementID, count_remaining) {
 	}
 }
 
+/**
+ * remove_link
+ * 		function
+ * 			remove link by provided site, source, and target id
+ * 			update results in network and graph
+ * 			refresh displayed tables for site
+ */
 function remove_link() {
 	var site_id = document.getElementById('select_site').value
 	var source_id = document.getElementById('remove_source').value
@@ -63,6 +93,13 @@ function remove_link() {
 	create_table(network.get_node_byDepth(site_id), 'levels')
 }
 
+/**
+ * remove_allChildren
+ * 		input
+ * 			elementID	string	name of element in html
+ * 		function
+ * 			remove tables for display, levels, and weights
+ */
 function remove_allChildren(elementID) {
 	var parent = document.getElementById(elementID)
 	while(parent.hasChildNodes()) {
@@ -70,10 +107,18 @@ function remove_allChildren(elementID) {
 	}
 }
 
+/**
+ * create_table
+ * 		input
+ * 			dict_data	dict	dictionary of keys and values
+ * 									values are either arrays or dictionaries
+ * 			elementID	string	name of element in html
+ * 		function
+ * 			append graph to div for display, levels, and weights
+ */
 function create_table(dict_data, elementID) {
 	var table = document.createElement('table')
 	table.classList.add('table')
-	//table.classList.add('table-striped')
 	table.classList.add('table-dark')
 	var tbody = document.createElement('tbody')
 	table.appendChild(tbody)
@@ -85,7 +130,13 @@ function create_table(dict_data, elementID) {
 		var row = document.createElement('tr')
 		var header_cell = document.createElement('th')
 		var header_strong = document.createElement('strong')
-		var header_text = document.createTextNode(source_id)
+		var header_text
+		if(elementID == 'levels') {
+			header_text = document.createTextNode('level-' + source_id)
+		}
+		else{
+			header_text = document.createTextNode('node-' + source_id)
+		}
 		header_strong.appendChild(header_text)
 		header_cell.appendChild(header_strong)
 		row.appendChild(header_cell)
