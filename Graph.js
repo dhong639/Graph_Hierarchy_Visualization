@@ -16,6 +16,8 @@ class Graph {
 		this.build_graph(count_nodes, count_ports)
 		this.spanning_tree(this.root)
 		//console.log(this.display)
+		console.log(this.breadth_first(this.root, true))
+		console.log(this.get_node_byDepth())
 	}
 	get_nodes() {
 		return Object.keys(this.display)
@@ -203,7 +205,42 @@ class Graph {
 				}
 			}
 		}
-
 		return output
+	}
+	get_node_byDepth() {
+		var dict_depth = {}
+
+		var depth = 0
+		var set_depthCurr = []
+		set_depthCurr.push(this.root)
+		var set_depthNext = []
+
+		var list_edge = this.breadth_first(this.root, true)
+		list_edge.forEach(edge => {
+			if(!set_depthCurr.includes(edge[0])) {
+				dict_depth[depth] = []
+				set_depthCurr.forEach(value => {
+					dict_depth[depth].push(value)
+				})
+				set_depthCurr = []
+				set_depthNext.forEach(value => {
+					set_depthCurr.push(value)
+				})
+				set_depthNext = []
+				depth += 1
+			}
+			set_depthNext.push(edge[1])
+		})
+		dict_depth[depth] = []
+		set_depthCurr.forEach(value => {
+			dict_depth[depth].push(value)
+		})
+		depth += 1
+		dict_depth[depth] = []
+		set_depthNext.forEach(value => {
+			dict_depth[depth].push(value)
+		})
+		
+		return dict_depth
 	}
 }
