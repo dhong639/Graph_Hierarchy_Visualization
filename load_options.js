@@ -1,13 +1,14 @@
 function load_site() {
 	var site_id = document.getElementById('select_site').value
-	var color = site_id != '' ? network.get_colorMain(site_id) : '#000000'
-	var invert = site_id != '' ? network.get_colorInvert(site_id) : '#FFFFFF'
-	console.log(color + '\t' + invert)
-	var text = site_id != '' ? site_id : text
-	currentSite_color = document.getElementById('currentSite_color')
-	currentSite_color.innerHTML = site_id
-	currentSite_color.style.color = invert
-	currentSite_color.style.backgroundColor = color
+	document.getElementById('currentSite_color').innerHTML = site_id
+	//var color = site_id != '' ? network.get_colorMain(site_id) : '#000000'
+	//var invert = site_id != '' ? network.get_colorInvert(site_id) : '#FFFFFF'
+	//console.log(color + '\t' + invert)
+	//var text = site_id != '' ? site_id : text
+	//currentSite_color = document.getElementById('currentSite_color')
+	//currentSite_color.innerHTML = site_id
+	//currentSite_color.style.color = invert
+	//currentSite_color.style.backgroundColor = color
 	emptySelect('remove_source', 1)
 	emptySelect('remove_target', 1)
 	if(site_id != '') {
@@ -16,7 +17,9 @@ function load_site() {
 		add_options(nodes, 'remove_source')
 	}
 	remove_allChildren('reachability')
+	remove_allChildren('levels')
 	create_table(network.get_site_display(site_id), 'reachability')
+	create_levels(network.get_node_byDepth(site_id))
 }
 
 function load_targets() {
@@ -97,4 +100,37 @@ function create_table(dict_display, elementID) {
 		table.appendChild(row)
 	})
 	document.getElementById(elementID).appendChild(table)
+}
+
+function create_levels(dict_depth) {
+	var table = document.createElement('table')
+	table.classList.add('table')
+	table.classList.add('table-dark')
+	var tbody = document.createElement('tbody')
+	table.appendChild(tbody)
+	var list_sourceID = Object.keys(dict_depth)
+	list_sourceID.sort(function(a, b) {
+		return a - b
+	})
+	list_sourceID.forEach(source_id => {
+		var row = document.createElement('tr')
+		var header_cell = document.createElement('th')
+		var header_strong = document.createElement('strong')
+		var header_text = document.createTextNode('level: ' + source_id)
+		header_strong.appendChild(header_text)
+		header_cell.appendChild(header_strong)
+		row.appendChild(header_cell)
+		var list_targetID = dict_depth[source_id]
+		/*list_targetID.sort(function(a, b) {
+			return a - b
+		})*/
+		list_targetID.forEach(target_id => {
+			var cell = document.createElement('th')
+			var text = document.createTextNode(target_id)
+			cell.appendChild(text)
+			row.appendChild(cell)
+		})
+		table.appendChild(row)
+	})
+	document.getElementById('levels').appendChild(table)
 }
