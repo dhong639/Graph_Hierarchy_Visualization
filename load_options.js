@@ -19,7 +19,7 @@ function load_site() {
 	remove_allChildren('reachability')
 	remove_allChildren('levels')
 	create_table(network.get_site_display(site_id), 'reachability')
-	create_levels(network.get_node_byDepth(site_id))
+	create_table(network.get_node_byDepth(site_id), 'levels')
 }
 
 function load_targets() {
@@ -60,7 +60,7 @@ function remove_link() {
 	remove_allChildren('reachability')
 	create_table(network.get_site_display(site_id), 'reachability')
 	remove_allChildren('levels')
-	create_levels(network.get_node_byDepth(site_id))
+	create_table(network.get_node_byDepth(site_id), 'levels')
 }
 
 function remove_allChildren(elementID) {
@@ -70,14 +70,14 @@ function remove_allChildren(elementID) {
 	}
 }
 
-function create_table(dict_display, elementID) {
+function create_table(dict_data, elementID) {
 	var table = document.createElement('table')
 	table.classList.add('table')
 	//table.classList.add('table-striped')
 	table.classList.add('table-dark')
 	var tbody = document.createElement('tbody')
 	table.appendChild(tbody)
-	var list_sourceID = Object.keys(dict_display)
+	var list_sourceID = Object.keys(dict_data)
 	list_sourceID.sort(function(a, b) {
 		return a - b
 	})
@@ -89,52 +89,38 @@ function create_table(dict_display, elementID) {
 		header_strong.appendChild(header_text)
 		header_cell.appendChild(header_strong)
 		row.appendChild(header_cell)
-		var list_targetID = Object.keys(dict_display[source_id])
-		list_targetID.sort(function(a, b) {
-			return a - b
-		})
-		list_targetID.forEach(target_id => {
-			var cell = document.createElement('th')
-			var status = dict_display[source_id][target_id]
-			var text = document.createTextNode(target_id + ':' + status)
-			cell.appendChild(text)
-			row.appendChild(cell)
-		})
-		table.appendChild(row)
+		/**
+		 * arrays create tables with two columns per row
+		 * applies only for levels
+		 */
+		if(Array.isArray(dict_data[source_id])) {
+			var list_targetID = dict_data[source_id]
+			list_targetID.forEach(target_id => {
+				var cell = document.createElement('th')
+				var text = document.createTextNode(target_id)
+				cell.appendChild(text)
+				row.appendChild(cell)
+			})
+			table.appendChild(row)
+		}
+		/**
+		 * all other items are assumed to be dictionaries
+		 * applies for display and weights
+		 */
+		else {
+			var list_targetID = Object.keys(dict_data[source_id])
+			list_targetID.sort(function(a, b) {
+				return a - b
+			})
+			list_targetID.forEach(target_id => {
+				var cell = document.createElement('th')
+				var status = dict_data[source_id][target_id]
+				var text = document.createTextNode(target_id + ':' + status)
+				cell.appendChild(text)
+				row.appendChild(cell)
+			})
+			table.appendChild(row)
+		}
 	})
 	document.getElementById(elementID).appendChild(table)
-}
-
-function create_levels(dict_depth) {
-	var table = document.createElement('table')
-	table.classList.add('table')
-	table.classList.add('table-dark')
-	//table.classList.add('table-striped')
-	var tbody = document.createElement('tbody')
-	table.appendChild(tbody)
-	var list_sourceID = Object.keys(dict_depth)
-	list_sourceID.sort(function(a, b) {
-		return a - b
-	})
-	list_sourceID.forEach(source_id => {
-		var row = document.createElement('tr')
-		var header_cell = document.createElement('th')
-		var header_strong = document.createElement('strong')
-		var header_text = document.createTextNode('level: ' + source_id)
-		header_strong.appendChild(header_text)
-		header_cell.appendChild(header_strong)
-		row.appendChild(header_cell)
-		var list_targetID = dict_depth[source_id]
-		/*list_targetID.sort(function(a, b) {
-			return a - b
-		})*/
-		list_targetID.forEach(target_id => {
-			var cell = document.createElement('th')
-			var text = document.createTextNode(target_id)
-			cell.appendChild(text)
-			row.appendChild(cell)
-		})
-		table.appendChild(row)
-	})
-	document.getElementById('levels').appendChild(table)
 }
