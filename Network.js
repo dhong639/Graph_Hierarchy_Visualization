@@ -237,4 +237,7 @@ class Network {
 		}
 		return string
 	}
+	get_node_byDepth(site_id) {
+		return this.dict_site[site_id].data.get_node_byDepth()
+	}
 }
