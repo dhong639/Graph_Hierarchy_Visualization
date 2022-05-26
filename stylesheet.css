@@ -1,0 +1,42 @@
+#cy {
+	height: 100%;
+	width: 100%;
+	position: absolute;
+	left: 0;
+	top: 0;
+}
+select {
+	width: 100%;
+	/*height: 100%;*/
+}
+h1 {
+	text-align: center;
+}
+h2 {
+	width: 100%;
+}
+h3 {
+	text-align: center;
+}
+button {
+	width: 100%;
+	background-color: white;
+	color: black;
+}
+button:active {
+	width: 100%;
+	background-color: black;
+	color: white;
+}
+#reachability {
+	overflow-x: scroll;
+	overflow-y: scroll;
+}
+#edge_weights {
+	overflow-x: scroll;
+	overflow-y: scroll;
+}
+#levels {
+	overflow-x: scroll;
+	overflow-y: scroll;
+}
