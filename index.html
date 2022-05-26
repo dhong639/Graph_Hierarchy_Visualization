@@ -32,6 +32,10 @@
 								<h1>Network Details</h1>
 							</div>
 						</div>
+						<!--
+							select site_id
+							will generate tables representing site matrices
+						-->
 						<div class="row">
 							<div class="col-md-6">
 								<label for="select_site">Select site_id:</label>
@@ -50,6 +54,11 @@
 								<h2 id="currentSite_color"></h2>
 							</div>
 						</div>
+						<!--
+							remove edge from site based on given source and target
+							source determined by selected site
+							target determined by selected source
+						-->
 						<div class="row">
 							<div class="col-md-12">
 								<h3>Remove Edge from Site</h3>
@@ -81,11 +90,19 @@
 							</div>
 						</div>
 						<br />
+						<!--
+							all nodes currently displayed, inactive, or non-existent in site
+							resets if new site chosen, or edge removed
+						-->
 						<div class="row">
 							<div class="col-md-12">
 								<h3>Reachability Matrix</h3>
 							</div>
 						</div>
+						<!--
+							all nodes grouped by levels
+							resets if new site chosen, or edge removed
+						-->
 						<div id="reachability" class="mh-25"></div>
 						<div class="row">
 							<div class="col-md-12">
@@ -105,7 +122,10 @@
 		var window_height = window.innerHeight * 0.25 + 'px'
 		document.getElementById('reachability').style.maxHeight = window_height
 		document.getElementById('levels').style.maxHeight = window_height
-		//document.getElementById('edge_weights').style.maxHeight = window_height
+		/**
+		 * determine random values for network
+		 * hard set at these maximum values
+		 */
 		var count_nodes = Math.floor(Math.random() * 25) + 1
 		var count_ports = Math.floor(Math.random() * 10) + 1
 		var count_sites = Math.floor(Math.random() * 5) + 1
