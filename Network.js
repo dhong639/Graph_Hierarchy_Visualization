@@ -3,24 +3,24 @@ class Network {
 		this.dict_site = {}
 		for(var i = 0; i<count_sites; i++) {
 			var color = this.get_colorRandom()
-			//var invert = this.get_colorInvert(color)
+			var invert = this.get_colorInvert(color)
 			/**
-			 * try to put light text against dark background
+			 * try to put dark text against light background
 			 * readability results may vary
 			 */
-			/*if(color < invert) {
+			if(color < invert) {
 				var temp = invert
 				invert = color
 				color = temp
-			}*/
-			color = this.adjust_color(color, -100)
-			//invert = this.adjust_color(invert, 100)
+			}
+			//color = this.adjust_color(color, 100)
+			invert = this.adjust_color(invert, -128)
 			var nodes = Math.floor(Math.random() * count_nodes) + 1
 			var ports = Math.floor(Math.random() * count_ports) + 1
 			//console.log(color + '\t' + invert)
 			this.dict_site[color.substring(1)] = {
 				color: color,
-				invert: this.get_colorInvert(color),
+				invert: invert,
 				data: new Graph(nodes, ports)
 			}
 		}
@@ -35,6 +35,7 @@ class Network {
 						'label': 'data(label)',
 						'text-valign': 'center',
 						'text-halign': 'center',
+						'text-wrap': 'wrap',
 						'color': 'data(invert)',
 						'background-color': 'data(color)',
 						'background-opacity': 0.75,
@@ -166,7 +167,7 @@ class Network {
 		this.cy.add({
 			data: {
 				id: node_id,
-				label: this.dict_site[site_id].data.is_root(id) ? site_id + '.' + id : id,
+				label: this.dict_site[site_id].data.is_root(id) ? site_id + ' - ' + id : id,
 				shape: this.dict_site[site_id].data.is_root(id) ? 'star' : 'ellipse',
 				color: color,
 				invert: invert
